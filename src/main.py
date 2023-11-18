@@ -1,9 +1,12 @@
-from sqlServer import SQLConnector, Table
+from sqlServer import SQLConnector
 from xlReader import xlsxParser
+
+SCHEMA = "INFORMATION_SCHEMA"
+EXCEL = "placeholder.xlsx"
 
 if __name__ == "__main__":
     # Create the connector
-    conn = SQLConnector("INFORMATION_SCHEMA")
+    conn = SQLConnector(SCHEMA)
 
     # Fetch the tables and fill their schemas
     conn.fetchTables()
@@ -13,7 +16,7 @@ if __name__ == "__main__":
     conn.close()
 
     # Parse the excel file
-    xp = xlsxParser("placeholder.xlsx")
+    xp = xlsxParser(EXCEL)
 
     # Get the headers from sql server and excel
     xlheaders = xp.get_headers()
@@ -34,7 +37,9 @@ if __name__ == "__main__":
         # determine if there was a pass or fail
         if not case: break
         else: match = key
-
+        
+    # retrieve the matching table
+    table = conn.get_table(match)
     # Raise exception since the headers don't match.
     if match == "":
         raise Exception("No matching schema was found: Check you headers")
