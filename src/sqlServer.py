@@ -23,8 +23,10 @@ class SQLConnector():
     tables: object = []
 
     def __init__(self, schemaName: str = None):
-        #Define the cursor and connection
+        # Raise specific exception if schema is not defined
         if schemaName == None: raise Exception("No schema name was provided")
+        
+        #Define the cursor and connection
         self._schema = schemaName
         self._connection = pyodbc.connect(self._connectionString)
         self._cursor = self._connection.cursor()
@@ -34,9 +36,7 @@ class SQLConnector():
         self._connection.close()
 
     # fill self.tables with Table objects (only the names)
-    def fetchTables(self):
-        # Raise specific exception if schema is not defined
-        
+    def fetchTables(self):        
         # Query to retrieve tables
         squery = f"select TABLE_NAME from {self._schema}.TABLES"
         self._cursor.execute(squery)
