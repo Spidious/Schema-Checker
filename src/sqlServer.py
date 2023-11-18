@@ -19,8 +19,8 @@ class SQLConnector():
     _connectionString = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;'
     _connection = None
     _cursor = None
-    _schema: str = None
-    tables: object = []
+    _schema: str
+    tables = []
 
     def __init__(self, schemaName: str = None):
         # Raise specific exception if schema is not defined
@@ -35,7 +35,7 @@ class SQLConnector():
     def close(self) -> None:
         self._connection.close()
 
-    # fill self.tables with Table objects (only the names)
+    # overwrite self.tables with Table objects (only the names)
     def fetchTables(self):        
         # Query to retrieve tables
         squery = f"select TABLE_NAME from {self._schema}.TABLES"
@@ -44,21 +44,33 @@ class SQLConnector():
         res = [i[0] for i in res]
 
         # Create tables with empty schema
-        self.tables = [Table(name) for name in res]
-        
-        
+        self.tables=[Table(name) for name in res]
 
+
+    # fill the schemas of the Tables in self.table
+    def fetchSchema(self):
+        # for each table in self.tables
+        for table in self.tables:
+            # Query the database for the Column_Name and Data_Type
+            squery = f"select COLUMN_NAME, DATA_TYPE from {self._schema}.COLUMNS where TABLE_NAME = '{table.tableName}'"
+            self._cursor.execute(squery)
+            res = self._cursor.fetchall()
+
+            # For each field in the result
+            for field in res:
+                # insert field into the table
+                table.insertSchema(field)
+            
+# Object class to hold table info
 class Table(object):
-    tableName = None
-    schema = {}
-
-    def __init__(self, name: str, schemas: list = [], types: list = []):
-        # Assert that the schemas should be the same lenght as types
-        if len(schemas)!=len(types): raise Exception("ERROR: list `schemas` length does not match `types` length. Potential loss of data.")
-
+    def __init__(self, name: str, fields: list = None):
+        # Create attributes
         self.tableName = name
+        self.schema = {}
 
-        # For every element in schemas
-        for i in range(0, len(schemas)):
-            self.schema[schemas[i]] = types[i]
+        # If fields is not undefined, iterate through list with insertSchema
+        if fields!=None: [self.insertSchema(i) for i in fields]
     
+    # Insert Tuples (<columnName>, <columnType>) into schema (changing the <columnType> if the <columnName> already exists)
+    def insertSchema(self, field: tuple):
+        self.schema[field[0]] = field[1]

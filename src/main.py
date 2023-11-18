@@ -1,7 +1,12 @@
-from sqlServer import SQLConnector as sqc
+from sqlServer import SQLConnector as sqlconn
 
 if __name__ == "__main__":
-    conn = sqc("INFORMATION_SCHEMA")
+    # Create the connector
+    conn = sqlconn("INFORMATION_SCHEMA")
+
+    # Fetch the tables and fill their schemas
     conn.fetchTables()
-    for table in conn.tables: print(table.tableName)
+    conn.fetchSchema()
+
+    # Close the connector
     conn.close()
