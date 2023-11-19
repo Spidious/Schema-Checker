@@ -11,7 +11,7 @@ Will then check if each the values in the following column are the correct type
 
 - Activate your python venv and install the requirements.txt with
   `pip install -r requirements.txt`
-- In `sqlServer.py` fill in the correct info
+- In `config/server.yaml` fill in the correct info
 - Change the SCHEMA and EXCEL variables in `main.py`
 
 

@@ -1,18 +1,12 @@
 import pyodbc
+from yamlRead import yamlReader
 
-'''
-SERVER = '<server-address>'
-DATABASE = '<database-name>'
-USERNAME = '<username>'
-PASSWORD = '<password>'
-'''
-
-# Connection attributes
-SERVER = 'LUKES-DESKTOP'
-DATABASE = 'schemas'
-# USERNAME = '<username>'
-# PASSWORD = '<password>'
-    
+yr = yamlReader("config/server.yaml")
+userData = yr.data
+SERVER = userData['SERVER']
+DATABASE = userData['DATABASE']
+USERNAME = userData['USERNAME']
+PASSWORD = userData['PASSWORD']
 
 # create an object to handle pyodbc
 class SQLConnector():
