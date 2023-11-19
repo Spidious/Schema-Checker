@@ -1,4 +1,4 @@
-# SCHEMA CHECKER
+# Schema Checker
 
 *so far this will only check if the headers match and find the schema associated*
 
