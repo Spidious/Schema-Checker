@@ -1,5 +1,6 @@
 from sqlServer import SQLConnector
 from xlReader import xlsxParser
+import re
 
 EXCEL = "userdb_example@gmail.com.xlsx"
 
@@ -28,6 +29,20 @@ if __name__ == "__main__":
 
     # Check each list and then check the values
     if searchLists(xlList, sqlList):
-        pass # TODO: Write the value check
-        
+        # rename
+        xldata = file.data
+        sqldata = sql.columns
+
+        # check all data from excel file
+        for sqlkey in sqldata.keys():
+            data = xldata[sqlkey]
+            regex = sqldata[sqlkey]
+            for entry in data:
+                if not re.search(regex, f"{entry}"):
+                    raise Exception(f"Excel failed -> entry: {entry} in {sqlkey} does not match {regex}")
+
+            print(f"{sqlkey}: PASS")
+
+    else:
+        raise Exception("Excel Schema does not match")
 
