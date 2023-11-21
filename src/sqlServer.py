@@ -13,7 +13,8 @@ class SQLConnector():
     _connectionString = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;'
     _connection = None
     _cursor = None
-    tables = []
+    schema_name = ""
+    columns = {}
 
     def __init__(self):
         self.connect()
@@ -28,81 +29,47 @@ class SQLConnector():
         self._connetion = None
         self._cursor = None
 
-    def wipeTables(self):
-        self.tables = []
 
-    # overwrite self.tables with Table objects (only the names)
-    def fetchTables(self):        
-        self.fetchHeaders()
-        self.fetchSchema()
+    def clearData(self):
+        self.columns = []
+        self.schema_name = ""
 
-    def fetchHeaders(self):
-        # Query to retrieve tables
-        squery = f"select TABLE_NAME from {self._schema}.TABLES"
-        self._cursor.execute(squery)
+    def _submitquery(self, connection_string:str=None):
+        # Submit a passed sql query and return the result
+        if connection_string == None: raise Exception("missing argument 'connection_string` submit sql query")
+        self._cursor.execute(connection_string)
         res = self._cursor.fetchall()
-        res = [i[0] for i in res]
+        # return object
+        return res
 
-        # Create tables with empty schema
-        self.tables=[Table(name) for name in res]
+    # This will fill the self.columns dictionary
+    # Returns a list of the headers
+    def fetchSchema(self, schema_name:str) -> list:
+        if self.schema_name=="": self.schema_name = schema_name
+        else: raise Exception("clear data before fetching new")
 
-    # fill the schemas of the Tables in self.table
-    def fetchSchema(self):
-        # for each table in self.tables
-        for table in self.tables:
-            # Query the database for the Column_Name and Data_Type
-            squery = f"select COLUMN_NAME, DATA_TYPE from {self._schema}.COLUMNS where TABLE_NAME = '{table.tableName}'"
-            self._cursor.execute(squery)
-            res = self._cursor.fetchall()
+        # Extract the id of the desired schema
+        headerid = self._submitquery(f"select id from excelschemas s where s.schemaname = '{schema_name}'")[0][0]
+        # the headers will be Keys and the datatypes will be values
+        headers = self._submitquery(f"select column_name from excelschemas_datatypes d where d.excelschema_id = {headerid}")
+        headers = [h[0] for h in headers]
 
-            # For each field in the result
-            for field in res:
-                # insert field into the table
-                table.insertSchema(field)
-
-    # get the headers of all tables in the self.tables list
-    def get_headers(self) -> dict:
-        # for each table in self.tables
-        headers = {}
-        for table in self.tables:
-            # for each key in the tables schema
-            tableHeaders = table.get_headers()
-            # add the table name and shcema to the headers dict
-            headers[table.tableName] = tableHeaders
-        # return the headers dict
+        # Loop through the datatypes adding each with its corresponding key to self.columns
+        for header in headers:
+            datatype = self._submitquery(f"select datatype_regex from excelschemas_datatypes d where d.column_name = '{header}'")[0][0]
+            self.columns[header] = datatype
         return headers
 
-    # Retrieve a table from the tables list
-    # Returns empty table with given name if the passed name was not found
-    def get_table(self, tb: str) -> object:
-        for table in self.tables:
-            if table.tableName == tb:
-                return table
-        return Table(tb)
-
-    def tester(self):
-        squery = "select * from excelschemas_datatypes"
-        self._cursor.execute(squery)
-        res = self._cursor.fetchall()
-        print(res)
-            
-# Object class to hold table info
-class Table(object):
-    def __init__(self, name: str, fields: list = None):
-        # Create attributes
-        self.tableName = name
-        self.schema = {}
-
-        # If fields is not undefined, iterate through list with insertSchema
-        if fields!=None: [self.insertSchema(i) for i in fields]
-    
-    # Insert Tuples (<columnName>, <columnType>) into schema (changing the <columnType> if the <columnName> already exists)
-    def insertSchema(self, field: tuple):
-        self.schema[field[0]] = field[1]
-
-    # return a list of the schema headers
+    # Returns a list the same as that returned in fetchSchema, however this can be run twice
     def get_headers(self) -> list:
-        headers = []
-        for key in self.schema.keys():
-            headers.append(key)
-        return headers
+        # Return the headers (keys) of the self.columns dict
+        lst = []
+        for key in self.columns.keys():
+            lst.append(key)
+        return lst
+
+
+if __name__ == "__main__":
+    test = SQLConnector()
+    test.fetchSchema("userdb")
+    test.close()

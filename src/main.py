@@ -1,54 +1,33 @@
 from sqlServer import SQLConnector
 from xlReader import xlsxParser
 
-# SCHEMA = "INFORMATION_SCHEMA"
-# EXCEL = "placeholder.xlsx"
+EXCEL = "userdb_example@gmail.com.xlsx"
 
-# if __name__ == "__main__":
-#     # Create the connector
-#     conn = SQLConnector(SCHEMA)
+# Determines if two lists contain the exact same values
+# Requires same number values and the same text values. Does NOT require same order 
+def searchLists(xl: list, sql: list) -> bool:
+    # Determine if they containt the same number values
+    if len(xl) != len(sql): return False
+    
+    # Determine if they each contain the same values
+    for item in xl:
+        if sql.count(item) == 0: return False
 
-#     # Fetch the tables and fill their schemas
-#     conn.fetchTables()
-#     conn.fetchSchema()
+    return True
 
-#     # Close the connector
-#     conn.close()
 
-#     # Parse the excel file
-#     xp = xlsxParser(EXCEL)
 
-#     # Get the headers from sql server and excel
-#     xlheaders = xp.get_headers()
-#     sqlheaders = conn.get_headers()
 
-#     # check if the headers have a match
-#     match = ""
-#     for key in sqlheaders.keys():
-#         # first check if they are even the same length
-#         if len(sqlheaders[key]) != len(xlheaders): continue
-#         # check if they contain the same headers
-#         case = True
-#         # for every index of both lists, if they do not match, switch the case to false and break
-#         for i in range(0, len(xlheaders)):
-#             if sqlheaders[key][i] != xlheaders[i]:
-#                 case = False
-#                 break
-#         # determine if there was a pass or fail
-#         if not case: break
-#         else: match = key
+
+if __name__ == "__main__":
+    # Open the excel file and get the schema from sql
+    file = xlsxParser(EXCEL)
+    xlList = file.get_headers()
+    sql = SQLConnector()
+    sqlList = sql.fetchSchema(file.name)
+
+    # Check each list and then check the values
+    if searchLists(xlList, sqlList):
+        pass # TODO: Write the value check
         
-#     # retrieve the matching table
-#     table = conn.get_table(match)
-#     # Raise exception since the headers don't match.
-#     if match == "":
-#         raise Exception("No matching schema was found: Check you headers")
 
-
-
-
-
-
-test = SQLConnector()
-test.tester()
-test.close()

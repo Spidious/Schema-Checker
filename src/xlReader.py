@@ -2,10 +2,15 @@ import openpyxl
 
 # Parser objet for handling xlsx files
 class xlsxParser(object):
+    name = ""
+    email = ""
     data = {}
     def __init__(self, file: str):
         # If the input file is not empty, parse the file
         # if file!=None:
+        f = file.split('_')
+        self.name = f[0]
+        self.email = f[1]
 
         if file!=None:
             #  Define variable to load the dataframe
@@ -29,5 +34,5 @@ class xlsxParser(object):
 
 
 if __name__ == "__main__":
-    reader = xlsxParser("placeholder.xlsx")
+    reader = xlsxParser("userdb_example@gmail.com.xlsx")
     pass
