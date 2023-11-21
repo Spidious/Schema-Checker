@@ -10,7 +10,7 @@ class xlsxParser(object):
         # if file!=None:
         f = file.split('_')
         self.name = f[0]
-        self.email = f[1]
+        self.email = f[1].replace(".xlsx", "")
 
         if file!=None:
             #  Define variable to load the dataframe
