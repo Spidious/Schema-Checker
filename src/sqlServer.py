@@ -13,15 +13,10 @@ class SQLConnector():
     _connectionString = f'DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={SERVER};DATABASE={DATABASE};Trusted_Connection=yes;'
     _connection = None
     _cursor = None
-    _schema: str
     tables = []
 
-    def __init__(self, schemaName: str = None):
-        # Raise specific exception if schema is not defined
-        if schemaName == None: raise Exception("No schema name was provided")
+    def __init__(self):
         self.connect()
-        #Define the cursor and connection
-        self._schema = schemaName
 
     def connect(self):
         self._connection = pyodbc.connect(self._connectionString)
@@ -33,8 +28,15 @@ class SQLConnector():
         self._connetion = None
         self._cursor = None
 
+    def wipeTables(self):
+        self.tables = []
+
     # overwrite self.tables with Table objects (only the names)
     def fetchTables(self):        
+        self.fetchHeaders()
+        self.fetchSchema()
+
+    def fetchHeaders(self):
         # Query to retrieve tables
         squery = f"select TABLE_NAME from {self._schema}.TABLES"
         self._cursor.execute(squery)
@@ -43,7 +45,6 @@ class SQLConnector():
 
         # Create tables with empty schema
         self.tables=[Table(name) for name in res]
-
 
     # fill the schemas of the Tables in self.table
     def fetchSchema(self):
@@ -78,6 +79,12 @@ class SQLConnector():
             if table.tableName == tb:
                 return table
         return Table(tb)
+
+    def tester(self):
+        squery = "select * from excelschemas_datatypes"
+        self._cursor.execute(squery)
+        res = self._cursor.fetchall()
+        print(res)
             
 # Object class to hold table info
 class Table(object):
